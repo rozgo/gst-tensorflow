@@ -1,0 +1,27 @@
+[package]
+name = "gst-plugin-tensorflow"
+version = "0.1.0"
+authors = ["Alex Rozgo <alex.rozgo@gmail.com>"]
+repository = "https://github.com/Simbotic/gst-plugin-tensorflow"
+license = "MIT/Apache-2.0"
+edition = "2018"
+description = "Tensorflow GStreamer Plugin"
+
+[dependencies]
+rand = "0.7"
+glib = { git = "https://github.com/gtk-rs/glib", features = ["subclassing"] }
+gstreamer = { git = "https://gitlab.freedesktop.org/gstreamer/gstreamer-rs", features = ["subclassing"] }
+gstreamer-base = { git = "https://gitlab.freedesktop.org/gstreamer/gstreamer-rs", features = ["subclassing"] }
+gstreamer-video = { git = "https://gitlab.freedesktop.org/gstreamer/gstreamer-rs" }
+gstreamer-audio = { git = "https://gitlab.freedesktop.org/gstreamer/gstreamer-rs" }
+byte-slice-cast = "0.3"
+num-traits = "0.2"
+tensorflow = { version = "0.13.0", features = ["tensorflow_gpu"] }
+
+[lib]
+name = "gsttensorflow"
+crate-type = ["cdylib"]
+path = "src/lib.rs"
+
+[build-dependencies]
+gst-plugin-version-helper = { path="./gst-plugin-version-helper" }
