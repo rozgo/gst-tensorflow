@@ -101,7 +101,7 @@ impl Segmentation {
     fn load_tf() -> Result<(Graph, Session), Box<dyn Error>> {
 
         // let filename = "deeplabv3_pascal_trainval_2018_01_04/deeplabv3_pascal_trainval/frozen_inference_graph.pb";
-        let filename = "deeplabv3_mnv2_pascal_train_aug_2018_01_29/deeplabv3_mnv2_pascal_train_aug/frozen_inference_graph.pb";
+        let filename = "models/deeplabv3_mnv2_pascal_train_aug_2018_01_29/deeplabv3_mnv2_pascal_train_aug/frozen_inference_graph.pb";
         let mut graph = Graph::new();
         let mut proto = Vec::new();
         File::open(filename)?.read_to_end(&mut proto)?;
