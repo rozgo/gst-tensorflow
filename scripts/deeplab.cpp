@@ -13,13 +13,11 @@
 // https://imagemagick.org/api/magick-image.php
 #include <wand/magick_wand.h>
 
-
-static const char* CodeToString(TF_Code code);
+static const char *CodeToString(TF_Code code);
 template <typename T>
 static TF_Tensor *CreateTensor(TF_DataType data_type, const std::vector<int64_t> &dims, const std::vector<T> &data);
 static void DeallocateBuffer(void *data, size_t);
 static TF_Buffer *ReadBufferFromFile(const char *file);
-
 
 int main()
 {
@@ -107,6 +105,27 @@ int main()
         return 6;
     }
 
+
+    std::cout << "TF_TensorByteSize: " << TF_TensorByteSize(output_tensor) << std::endl;
+    std::cout << "    TF_TensorType: " << TF_TensorType(output_tensor) << std::endl;
+    std::cout << "       TF_NumDims: " << TF_NumDims(output_tensor) << std::endl;
+    int num_dims = TF_NumDims(output_tensor);
+    for (int i = 0; i < num_dims; ++i)
+        std::cout << "           TF_Dim: " << i << " " << TF_Dim(output_tensor, i) << std::endl;
+
+    int64_t *data = static_cast<std::int64_t *>(TF_TensorData(output_tensor));
+
+    std::vector<std::int64_t> output;
+    output.assign(data, data + 512 * 288);
+
+    for (auto i=0; i < 512 * 288; ++i) 
+    {
+        // std::cout << data[i] << " ";
+    }
+
+    std::cout << "     Raw max_value: " << *std::max_element(data, data + 512 * 288) << std::endl;
+    std::cout << "  Output max_value: " << *std::max_element(output.begin(), output.end()) << std::endl;
+
     TF_CloseSession(session, status);
     if (TF_GetCode(status) != TF_OK)
     {
@@ -121,21 +140,6 @@ int main()
         return 8;
     }
 
-    std::cout << "TF_TensorByteSize: " << TF_TensorByteSize(output_tensor) << std::endl;
-    std::cout << "    TF_TensorType: " << TF_TensorType(output_tensor) << std::endl;
-    std::cout << "       TF_NumDims: " << TF_NumDims(output_tensor) << std::endl;
-    int num_dims = TF_NumDims(output_tensor);
-    for (int i = 0; i < num_dims; ++i)
-        std::cout << "           TF_Dim: " << i << " " << TF_Dim(output_tensor, i) << std::endl;
-
-    int64_t *data = static_cast<std::int64_t *>(TF_TensorData(output_tensor));
-
-    std::vector<std::int64_t> output;
-    output.assign(data, data + 512 * 288);
-
-    std::cout << "     Raw max_value: " << *std::max_element(data, data + 512 * 288) << std::endl;
-    std::cout << "  Output max_value: " << *std::max_element(output.begin(), output.end()) << std::endl;
-
     TF_DeleteStatus(status);
     TF_DeleteTensor(input_tensor);
     TF_DeleteTensor(output_tensor);
@@ -143,45 +147,47 @@ int main()
     return 0;
 }
 
-static const char* CodeToString(TF_Code code) {
-  switch (code) {
+static const char *CodeToString(TF_Code code)
+{
+    switch (code)
+    {
     case TF_OK:
-      return "TF_OK";
+        return "TF_OK";
     case TF_CANCELLED:
-      return "TF_CANCELLED";
+        return "TF_CANCELLED";
     case TF_UNKNOWN:
-      return "TF_UNKNOWN";
+        return "TF_UNKNOWN";
     case TF_INVALID_ARGUMENT:
-      return "TF_INVALID_ARGUMENT";
+        return "TF_INVALID_ARGUMENT";
     case TF_DEADLINE_EXCEEDED:
-      return "TF_DEADLINE_EXCEEDED";
+        return "TF_DEADLINE_EXCEEDED";
     case TF_NOT_FOUND:
-      return "TF_NOT_FOUND";
+        return "TF_NOT_FOUND";
     case TF_ALREADY_EXISTS:
-      return "TF_ALREADY_EXISTS";
+        return "TF_ALREADY_EXISTS";
     case TF_PERMISSION_DENIED:
-      return "TF_PERMISSION_DENIED";
+        return "TF_PERMISSION_DENIED";
     case TF_UNAUTHENTICATED:
-      return "TF_UNAUTHENTICATED";
+        return "TF_UNAUTHENTICATED";
     case TF_RESOURCE_EXHAUSTED:
-      return "TF_RESOURCE_EXHAUSTED";
+        return "TF_RESOURCE_EXHAUSTED";
     case TF_FAILED_PRECONDITION:
-      return "TF_FAILED_PRECONDITION";
+        return "TF_FAILED_PRECONDITION";
     case TF_ABORTED:
-      return "TF_ABORTED";
+        return "TF_ABORTED";
     case TF_OUT_OF_RANGE:
-      return "TF_OUT_OF_RANGE";
+        return "TF_OUT_OF_RANGE";
     case TF_UNIMPLEMENTED:
-      return "TF_UNIMPLEMENTED";
+        return "TF_UNIMPLEMENTED";
     case TF_INTERNAL:
-      return "TF_INTERNAL";
+        return "TF_INTERNAL";
     case TF_UNAVAILABLE:
-      return "TF_UNAVAILABLE";
+        return "TF_UNAVAILABLE";
     case TF_DATA_LOSS:
-      return "TF_DATA_LOSS";
+        return "TF_DATA_LOSS";
     default:
-      return "Unknown";
-  }
+        return "Unknown";
+    }
 }
 
 template <typename T>
@@ -199,7 +205,10 @@ static TF_Tensor *CreateTensor(TF_DataType data_type, const std::vector<int64_t>
 
     if (tensor != nullptr && TF_TensorData(tensor) != nullptr)
     {
-        std::memcpy(TF_TensorData(tensor), data.data(), std::min(data_size, TF_TensorByteSize(tensor)));
+        std::cout << "TF_TensorByteSize(tensor) " << TF_TensorByteSize(tensor) << std::endl;
+        size_t cp_len = std::min(data_size, TF_TensorByteSize(tensor));
+        std::cout << "Copying " << cp_len << " bytes to tensor" << std::endl;
+        std::memcpy(TF_TensorData(tensor), data.data(), cp_len);
     }
     else
     {

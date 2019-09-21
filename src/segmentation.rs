@@ -30,7 +30,7 @@ use std::result::Result;
 use std::i32;
 use std::sync::Mutex;
 
-use rand::Rng;
+use rand::prelude::*;
 
 #[cfg_attr(feature = "examples_system_alloc", global_allocator)]
 #[cfg(feature = "examples_system_alloc")]
@@ -99,23 +99,12 @@ struct Segmentation {
 impl Segmentation {
 
     fn load_tf() -> Result<(Graph, Session), Box<dyn Error>> {
-
-        // let filename = "deeplabv3_pascal_trainval_2018_01_04/deeplabv3_pascal_trainval/frozen_inference_graph.pb";
-        let filename = "models/deeplabv3_mnv2_pascal_train_aug_2018_01_29/deeplabv3_mnv2_pascal_train_aug/frozen_inference_graph.pb";
+        let filename = "models/deeplabv3_mnv2_dm05_pascal_trainval/frozen_inference_graph.pb";
         let mut graph = Graph::new();
         let mut proto = Vec::new();
         File::open(filename)?.read_to_end(&mut proto)?;
         graph.import_graph_def(&proto, &ImportGraphDefOptions::new())?;
         let session = Session::new(&SessionOptions::new(), &graph)?;
-
-        // let ops = graph.operation_iter().filter_map(|op: tensorflow::Operation| {
-            
-        //     Some(op.op_type().unwrap())
-        // }).collect::<String>();
-        // println!("{:?}", ops);
-
-        // assert!((1==0));
-
         Ok((graph, session))
     }
 
@@ -136,7 +125,7 @@ impl ObjectSubclass for Segmentation {
     // Called when a new instance is to be created. We need to return an instance
     // of our struct here.
     fn new() -> Self {
-        let mut rng = rand::thread_rng();
+        let mut rng: StdRng = SeedableRng::seed_from_u64(1);
         let (graph, session) = Segmentation::load_tf().unwrap();
         let mut color_map = Vec::with_capacity(256);
         for _ in 0 .. 256 {
@@ -276,7 +265,7 @@ impl ObjectImpl for Segmentation {
         match *prop {
             subclass::Property("invert", ..) => {
                 let mut settings = self.settings.lock().unwrap();
-                let invert = value.get().unwrap();
+                let invert = value.get_some().expect("type checked upstream");
                 gst_info!(
                     self.cat,
                     obj: element,
@@ -288,7 +277,7 @@ impl ObjectImpl for Segmentation {
             }
             subclass::Property("shift", ..) => {
                 let mut settings = self.settings.lock().unwrap();
-                let shift = value.get().unwrap();
+                let shift = value.get_some().expect("type checked upstream");
                 gst_info!(
                     self.cat,
                     obj: element,
@@ -533,17 +522,18 @@ impl BaseTransformImpl for Segmentation {
             let tensor_out = graph.operation_by_name_required("SemanticPredictions").unwrap();
             let tensor_image_in = Tensor::new(&[1, 512, 288, 3]).with_values(in_data).unwrap();
 
-            println!("tensor_in num_inputs: {} num_outputs: {} type: {}", tensor_in.num_inputs(), tensor_in.num_outputs(), tensor_in.output_type(0));
+            // println!("tensor_in num_inputs: {} num_outputs: {} type: {}", tensor_in.num_inputs(), tensor_in.num_outputs(), tensor_in.output_type(0));
 
             let mut step = SessionRunArgs::new();
             step.add_feed(&tensor_in, 0, &tensor_image_in);
             let seg_out = step.request_fetch(&tensor_out, 0);
-            session.run(&mut step).unwrap();
+            let _rr = session.run(&mut step);
+            // println!("session.run: {:?}", rr);
 
             let tensor_segmentation : tensorflow::Tensor<i64> = step.fetch(seg_out).unwrap();
             
             let segmentation = tensor_segmentation.to_vec();
-            println!("out tensor length: {} dim: {:?}", segmentation.len(), tensor_segmentation.dims());
+            // println!("out tensor length: {} dim: {:?} max: {:?}", segmentation.len(), tensor_segmentation.dims(), segmentation.iter().max());
             // println!("SEGMENTATION: {:?}", &segmentation);
             // println!("SEGMENTATION: {:?}", &tensor_segmentation);
             for i in 0 .. segmentation.len() {

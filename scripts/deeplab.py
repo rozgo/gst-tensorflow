@@ -21,8 +21,8 @@ class DeepLabModel(object):
         self.graph = tf.Graph()
 
         graph_def = None
-        # pb_file = open("deeplabv3_mnv2_pascal_train_aug_2018_01_29/deeplabv3_mnv2_pascal_train_aug/frozen_inference_graph.pb", "rb")
-        pb_file = open("../models/deeplabv3_pascal_trainval_2018_01_04/deeplabv3_pascal_trainval/frozen_inference_graph.pb","rb")
+        pb_file = open("../models/deeplabv3_pascal_trainval/frozen_inference_graph.pb", "rb")
+        # pb_file = open("../models/deeplabv3_mnv2_dm05_pascal_trainval/frozen_inference_graph.pb","rb")
         graph_def = tf.GraphDef.FromString(pb_file.read())
         pb_file.close()
 

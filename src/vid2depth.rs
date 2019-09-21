@@ -265,7 +265,7 @@ impl ObjectImpl for Vid2Depth {
         match *prop {
             subclass::Property("invert", ..) => {
                 let mut settings = self.settings.lock().unwrap();
-                let invert = value.get().unwrap();
+                let invert = value.get_some().expect("type checked upstream");
                 gst_info!(
                     self.cat,
                     obj: element,
@@ -277,7 +277,7 @@ impl ObjectImpl for Vid2Depth {
             }
             subclass::Property("shift", ..) => {
                 let mut settings = self.settings.lock().unwrap();
-                let shift = value.get().unwrap();
+                let shift = value.get_some().expect("type checked upstream");
                 gst_info!(
                     self.cat,
                     obj: element,

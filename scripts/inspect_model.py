@@ -2,7 +2,7 @@
 from tensorflow.python.tools import inspect_checkpoint as chkp
 
 # print all tensors in checkpoint file
-chkp.print_tensors_in_checkpoint_file("../models/deeplabv3_pascal_trainval_2018_01_04/deeplabv3_pascal_trainval/frozen_inference_graph.pb", tensor_name='', all_tensors=True)
+chkp.print_tensors_in_checkpoint_file("../models/deeplabv3_mnv2_pascal_train_aug/frozen_inference_graph.pb", tensor_name='', all_tensors=True)
 
 # tensor_name:  v1
 # [ 1.  1.  1.]
